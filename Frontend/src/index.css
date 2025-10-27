@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+
+/* Dark theme scrollbar for cast section */
+.scrollbar-dark::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: #1c1c1c;
+  border-radius: 10px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #ff1e1e, #ff4646);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #ff4646, #ff1e1e);
+}
+
+
+
+/* 🌑 Custom dark dropdown style */
+.custom-select {
+  appearance: none;
+  background-color: #1c1c1c;
+  border: 1px solid #2e2e2e;
+  color: #ffffff;
+  border-radius: 0.5rem;
+  padding-right: 2rem;
+  transition: all 0.3s ease;
+}
+
+.custom-select:hover {
+  border-color: #a00000;
+  box-shadow: 0 0 6px #a00000;
+}
+
+.custom-select:focus {
+  border-color: #ff0000;
+  box-shadow: 0 0 10px #a00000;
+}
+
+/* 🌒 Dropdown options style (works in Chromium + Firefox) */
+.custom-select option {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* 🪶 Remove ugly default highlight (especially Chrome/Edge) */
+.custom-select option:checked,
+.custom-select option:hover,
+.custom-select option:focus {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* 💄 Cursor pointer for all buttons globally (optional) */
+button {
+  cursor: pointer;
+}
+
