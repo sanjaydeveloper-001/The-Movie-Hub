@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Banner from "../components/Banner";
+import Banner from "../Components/Banner";
 import MovieGrid from "../Components/MovieGrid";
 import FilterBar from "../Components/FilterBar";
 import Pagination from "../Components/Pagination";
