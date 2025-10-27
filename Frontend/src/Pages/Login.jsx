@@ -25,7 +25,7 @@ export default function Login({ setUser }) {
   const handleGoogleSignup = async (response) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/users/google-login",
+        `${import.meta.env.VITE_BACKEND_LINK}/api/users/google-login`,
         {
           token: response.credential,
         }
@@ -54,7 +54,7 @@ export default function Login({ setUser }) {
     try {
       setLoading(true);
       const { data } = await axios.post(
-        "http://localhost:5000/api/users/login",
+        `${import.meta.env.VITE_BACKEND_LINK}/api/users/login`,
         form
       );
       if (remember) {

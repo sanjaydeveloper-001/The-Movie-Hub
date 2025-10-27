@@ -14,7 +14,7 @@ export const MovieProvider = ({ children }) => {
 
   const api = useMemo(() => {
     return axios.create({
-      baseURL: "http://localhost:5000",
+      baseURL: import.meta.env.VITE_BACKEND_LINK,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   }, [token]);

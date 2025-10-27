@@ -82,7 +82,7 @@ export default function Signup({ setUser }) {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/users/signup", {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_LINK}/api/users/signup`, {
         username: form.username,
         email: form.email,
         password: form.password,
@@ -102,7 +102,7 @@ export default function Signup({ setUser }) {
   const handleGoogleSignup = async (response) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/users/google-login",
+        `${import.meta.env.VITE_BACKEND_LINK}/api/users/google-login`,
         { token: response.credential }
       );
       setUser(res.data);
