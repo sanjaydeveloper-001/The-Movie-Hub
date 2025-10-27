@@ -8,11 +8,7 @@ dotenv.config();
 const app = express();
 connectDB();
 
-app.use(cors({
-  origin: process.env.FRONTEND_LINK,
-  credentials: true,
-}));
-
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("CineVault API Running 🎬"));
