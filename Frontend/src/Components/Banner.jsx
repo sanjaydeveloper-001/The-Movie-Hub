@@ -6,10 +6,15 @@ import genreIds from "../utils/generIds";
 
 const API_KEY = import.meta.env.VITE_TMDB_API;
 
-export default function Banner() {
+export default function Banner({lang}) {
   const [movies, setMovies] = useState([]);
   const [index, setIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const year = today.getFullYear();
 
   // ✅ Detect mobile screen
   useEffect(() => {
@@ -23,7 +28,7 @@ export default function Banner() {
   useEffect(() => {
     const fetchMovies = async () => {
       const res = await axios.get(
-        `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=ta&sort_by=popularity.desc`
+        `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=${lang}&primary_release_date.gte=${year}-01-01&primary_release_date.lte=${year}-${month}-${day}&sort_by=primary_release_date.desc`
       );
       setMovies(res.data.results.slice(0, 5));
     };

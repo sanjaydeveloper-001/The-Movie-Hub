@@ -4,6 +4,7 @@ import { MovieContext } from "../context/MovieContext";
 import WatchlistCard from "../Components/WatchlistCard";
 import { MdMovieFilter } from "react-icons/md";
 import { BsBookmarkHeartFill } from "react-icons/bs";
+import { toast } from "react-toastify";
 
 export default function Watchlist({ user }) {
   const { watchlist } = useContext(MovieContext);
@@ -15,7 +16,19 @@ export default function Watchlist({ user }) {
 
   
   useEffect(() => {
-    if (!user) navigate("/login");
+    if (!user) {
+    navigate("/login");
+    toast("Please login to view your watchlist", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    })
+  }
   }, [user, navigate]);
 
   // Empty Watchlist UI

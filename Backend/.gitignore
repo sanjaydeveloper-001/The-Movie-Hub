@@ -25,3 +25,6 @@ dist-ssr
 
 #Environmental Variable
 .env
+
+#uploaded
+uploads

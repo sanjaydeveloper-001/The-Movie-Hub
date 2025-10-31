@@ -13,6 +13,7 @@ export default function MovieCard({ movie }) {
     removeFromFavourites,
     watchlist,
     favourites,
+    actionLoading,
   } = useContext(MovieContext);
 
   const navigate = useNavigate();
@@ -101,14 +102,21 @@ export default function MovieCard({ movie }) {
           {/* Watchlist Icon */}
           <button
             onClick={handleWatchlist}
+            disabled={
+              actionLoading.type === "watchlist" &&
+              actionLoading.id === movie.id
+            }
             title={isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
             className={`
-              p-2 rounded-full bg-black/50 backdrop-blur-sm 
-              transition-all duration-300 hover:scale-110 hover:bg-black/70 
-              ${isInWatchlist ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
-            `}
+    p-2 rounded-full bg-black/50 backdrop-blur-sm
+    transition-all duration-300 hover:scale-110 hover:bg-black/70
+    ${isInWatchlist ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
+  `}
           >
-            {isInWatchlist ? (
+            {actionLoading.type === "watchlist" &&
+            actionLoading.id === movie.id ? (
+              <span className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin block"></span>
+            ) : isInWatchlist ? (
               <BsBookmarkFill className="text-sm sm:text-md md:text-xl drop-shadow-[0_0_6px_#3b82f6]" />
             ) : (
               <BsBookmarkPlus className="text-sm sm:text-md md:text-xl text-[#3b82f6]" />
@@ -118,14 +126,23 @@ export default function MovieCard({ movie }) {
           {/* Favourite Icon */}
           <button
             onClick={handleFavourites}
-            title={isInFavourites ? "Remove from Favourites" : "Add to Favourites"}
+            disabled={
+              actionLoading.type === "favourites" &&
+              actionLoading.id === movie.id
+            }
+            title={
+              isInFavourites ? "Remove from Favourites" : "Add to Favourites"
+            }
             className={`
-              p-2 rounded-full bg-black/50 backdrop-blur-sm 
-              transition-all duration-300 hover:scale-110 hover:bg-black/70 
-              ${isInFavourites ? "text-red-500" : "text-gray-300 hover:text-red-500"}
-            `}
+    p-2 rounded-full bg-black/50 backdrop-blur-sm 
+    transition-all duration-300 hover:scale-110 hover:bg-black/70 
+    ${isInFavourites ? "text-red-500" : "text-gray-300 hover:text-red-500"}
+  `}
           >
-            {isInFavourites ? (
+            {actionLoading.type === "favourites" &&
+            actionLoading.id === movie.id ? (
+              <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin block"></span>
+            ) : isInFavourites ? (
               <FaHeart className="text-sm sm:text-md md:text-xl drop-shadow-[0_0_6px_#ef4444]" />
             ) : (
               <FaRegHeart className="text-sm sm:text-md md:text-xl text-[#ef4444]" />

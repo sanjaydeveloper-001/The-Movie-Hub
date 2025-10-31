@@ -40,19 +40,60 @@ export default function MovieDetails() {
   const [trailer, setTrailer] = useState(null);
   const [wiki, setWiki] = useState(null);
 
+  // 🔹 Loading states
+  const [isProcessingWatchlist, setIsProcessingWatchlist] = useState(false);
+  const [isProcessingFavourite, setIsProcessingFavourite] = useState(false);
+  const [actionWatchlist, setActionWatchlist] = useState(""); // "adding" | "removing"
+  const [actionFavourite, setActionFavourite] = useState(""); // "adding" | "removing"
+
   const API_KEY = import.meta.env.VITE_TMDB_API;
 
   const isInWatchlist = watchlist.some((m) => m.id === Number(id));
   const isInFavourites = favourites.some((m) => m.id === Number(id));
 
-  const handleWatchlist = () => {
-    if (isInWatchlist) removeFromWatchlist(movie.id);
-    else addToWatchlist(movie);
+  // 🔹 Handle Watchlist (Add / Remove)
+  // 🔹 Handle Watchlist (Add / Remove)
+  const handleWatchlist = async () => {
+    try {
+      setIsProcessingWatchlist(true);
+      setActionWatchlist(isInWatchlist ? "removing" : "adding");
+
+      if (isInWatchlist) {
+        await removeFromWatchlist(movie.id);
+      } else {
+        await addToWatchlist(movie);
+      }
+
+      // ⏳ Wait a short moment to visually show "Removing..."
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    } catch (err) {
+      console.error("Error updating watchlist:", err);
+    } finally {
+      setIsProcessingWatchlist(false);
+      setActionWatchlist("");
+    }
   };
 
-  const handleFavourites = () => {
-    if (isInFavourites) removeFromFavourites(movie.id);
-    else addToFavourites(movie);
+  // 🔹 Handle Favourites (Add / Remove)
+  const handleFavourites = async () => {
+    try {
+      setIsProcessingFavourite(true);
+      setActionFavourite(isInFavourites ? "removing" : "adding");
+
+      if (isInFavourites) {
+        await removeFromFavourites(movie.id);
+      } else {
+        await addToFavourites(movie);
+      }
+
+      // ⏳ Small delay for smooth UI feedback
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    } catch (err) {
+      console.error("Error updating favourites:", err);
+    } finally {
+      setIsProcessingFavourite(false);
+      setActionFavourite("");
+    }
   };
 
   useEffect(() => {
@@ -60,14 +101,12 @@ export default function MovieDetails() {
 
     const fetchData = async () => {
       try {
-        // 🎬 Movie Details
         const movieRes = await fetch(
           `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=en-US&append_to_response=videos`
         );
         const movieData = await movieRes.json();
         setMovie(movieData);
 
-        // 🎥 Trailer
         const officialTrailer = movieData.videos?.results?.find(
           (v) => v.type === "Trailer" && v.site === "YouTube"
         );
@@ -80,7 +119,6 @@ export default function MovieDetails() {
             )}`
           );
 
-        // 👥 Cast & Crew
         const creditsRes = await fetch(
           `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}&language=en-US`
         );
@@ -88,7 +126,6 @@ export default function MovieDetails() {
         setCast(creditsData.cast.slice(0, 15));
         setCrew(creditsData.crew);
 
-        // 🎞️ OTT Providers
         const providerRes = await fetch(
           `https://api.themoviedb.org/3/movie/${id}/watch/providers?api_key=${API_KEY}`
         );
@@ -96,7 +133,6 @@ export default function MovieDetails() {
         const indiaProviders = providerData.results?.IN?.flatrate || [];
         setProviders(indiaProviders);
 
-        // 📖 Wikipedia Summary
         const wikiRes = await fetch(
           `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
             movieData.title
@@ -124,7 +160,6 @@ export default function MovieDetails() {
       <p className="text-center mt-20 text-gray-400 text-lg">Loading...</p>
     );
 
-  // 🎬 Extract crew info
   const director = crew.find((p) => p.job === "Director");
   const producers = crew.filter((p) => p.job === "Producer");
   const musicDirector = crew.find((p) => p.job === "Original Music Composer");
@@ -139,15 +174,13 @@ export default function MovieDetails() {
       transition={{ duration: 0.6 }}
       className="relative min-h-screen bg-[#0a0a0a] text-white overflow-hidden"
     >
-      {/* Background Image */}
+      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-25 blur-lg"
         style={{
           backgroundImage: `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`,
         }}
       ></div>
-
-      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/90 to-black/95"></div>
 
       {/* Back Button */}
@@ -158,9 +191,8 @@ export default function MovieDetails() {
         <FaArrowLeft className="sm:text-lg text-sm" />
       </button>
 
-      {/* Main Content */}
+      {/* Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-5 py-10 flex flex-col gap-12">
-        {/* Poster + Info */}
         <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
           {/* Poster */}
           <div className="flex justify-center md:justify-start w-full sm:w-4/5 md:w-2/5 lg:w-1/3 px-4">
@@ -213,25 +245,11 @@ export default function MovieDetails() {
               {movie.overview}
             </p>
 
-            {/* Wikipedia */}
-            {wiki && (
-              <Wiki wiki={wiki} />
-            )}
-
-            {/* Genres */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
-              {movie.genres?.map((g) => (
-                <span
-                  key={g.id}
-                  className="bg-[#1c1c1c]/80 text-gray-300 px-3 py-1 rounded-full text-sm"
-                >
-                  {g.name}
-                </span>
-              ))}
-            </div>
+            {wiki && <Wiki wiki={wiki} />}
 
             {/* Buttons */}
             <div className="flex flex-wrap items-center gap-4 mt-6">
+              {/* Trailer */}
               <button
                 onClick={() => window.open(trailer, "_blank")}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-medium shadow-md hover:scale-105 transition"
@@ -243,54 +261,73 @@ export default function MovieDetails() {
               {/* Watchlist */}
               <button
                 onClick={handleWatchlist}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition cursor-pointer
-                  ${
-                    isInWatchlist
-                      ? "bg-gradient-to-r from-blue-700/60 to-blue-500 text-white"
-                      : "bg-[#1b1b1b] text-blue-400 border border-blue-700/40 hover:bg-blue-900/20"
-                  }`}
+                disabled={isProcessingWatchlist}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
+                  isInWatchlist
+                    ? "bg-gradient-to-r from-blue-700/60 to-blue-500 text-white"
+                    : "bg-[#1b1b1b] text-blue-400 border border-blue-700/40 hover:bg-blue-900/20"
+                } ${
+                  isProcessingWatchlist ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
-                {isInWatchlist ? (
-                  <BsBookmarkFill className="text-lg" />
+                {isProcessingWatchlist ? (
+                  <span className="text-xs capitalize">
+                    {actionWatchlist === "removing"
+                      ? "Removing..."
+                      : "Adding..."}
+                  </span>
+                ) : isInWatchlist ? (
+                  <>
+                    <BsBookmarkFill className="text-lg" />
+                    <span className="text-xs">In Watchlist</span>
+                  </>
                 ) : (
-                  <BsBookmarkPlus className="text-lg" />
+                  <>
+                    <BsBookmarkPlus className="text-lg" />
+                    <span className="text-xs">Add to Watchlist</span>
+                  </>
                 )}
-                <span className="text-xs">
-                  {isInWatchlist ? "In Watchlist" : "Add to Watchlist"}
-                </span>
               </button>
 
               {/* Favourite */}
               <button
                 onClick={handleFavourites}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition cursor-pointer
-                  ${
-                    isInFavourites
-                      ? "bg-gradient-to-r from-pink-700/60 to-red-600 text-white"
-                      : "bg-[#1b1b1b] text-red-400 border border-red-700/40 hover:bg-red-900/20"
-                  }`}
+                disabled={isProcessingFavourite}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
+                  isInFavourites
+                    ? "bg-gradient-to-r from-pink-700/60 to-red-600 text-white"
+                    : "bg-[#1b1b1b] text-red-400 border border-red-700/40 hover:bg-red-900/20"
+                } ${
+                  isProcessingFavourite ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
-                {isInFavourites ? (
-                  <FaHeart className="text-lg" />
+                {isProcessingFavourite ? (
+                  <span className="text-xs capitalize">
+                    {actionFavourite === "removing"
+                      ? "Removing..."
+                      : "Adding..."}
+                  </span>
+                ) : isInFavourites ? (
+                  <>
+                    <FaHeart className="text-lg" />
+                    <span className="text-xs">In Favourites</span>
+                  </>
                 ) : (
-                  <FaRegHeart className="text-lg" />
+                  <>
+                    <FaRegHeart className="text-lg" />
+                    <span className="text-xs">Add to Favourite</span>
+                  </>
                 )}
-                <span className="text-xs">
-                  {isInFavourites ? "In Favourites" : "Add to Favourite"}
-                </span>
               </button>
             </div>
 
-            {/* OTT Providers */}
-            <MovieOTTs providers={providers} />
+            <MovieOTTs providers={providers} movie={movie} />
           </div>
         </div>
 
-        {/* Cast Section */}
         <MovieCast cast={cast} />
 
-        {/* Movie Info Section */}
-        <MovieMoreInfo 
+        <MovieMoreInfo
           movie={movie}
           director={director}
           producers={producers}
@@ -298,7 +335,6 @@ export default function MovieDetails() {
           productionCompanies={productionCompanies}
         />
 
-        {/* 🌐 External Reviews Section */}
         <MovieReviews movie={movie} />
       </div>
     </motion.div>

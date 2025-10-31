@@ -4,6 +4,7 @@ import { MovieContext } from "../context/MovieContext";
 import FavouritesCard from "../Components/FavouritesCard";
 import { FaHeart } from "react-icons/fa";
 import { RiMovie2Fill } from "react-icons/ri";
+import { toast } from "react-toastify";
 
 export default function Favourites({ user }) {
 
@@ -15,7 +16,19 @@ export default function Favourites({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) navigate("/login");
+    if (!user) {
+    navigate("/login");
+    toast("Please login to view your favouritelist", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+      })
+    }
   }, [user, navigate]);
 
   if (favourites.length === 0) {

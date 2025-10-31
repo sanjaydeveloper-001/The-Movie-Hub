@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MovieProvider } from "./context/MovieContext";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -16,6 +16,7 @@ import Signup from "./Pages/Signup";
 import Login from "./Pages/Login";
 import axios from "axios";
 import ForgotPassword from "./Pages/ForgotPassword";
+import ProfilePage from "./Pages/ProfilePage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -25,7 +26,7 @@ function App() {
     if (storedToken) {
       const fetchUser = async () => {
         try {
-          const res = await axios.get("http://localhost:5000/api/users/profile", {
+          const res = await axios.get(`${import.meta.env.VITE_BACKEND_LINK}/api/users/profile`, {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
@@ -64,7 +65,6 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/movie/:id" element={<MovieDetails />} />
 
-                {/* 🔒 Protected Routes */}
                 <Route
                   path="/watchlist"
                   element={<Watchlist user={user} />}
@@ -77,7 +77,6 @@ function App() {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
 
-                {/* Pass user setters */}
                 <Route
                   path="/signup"
                   element={<Signup setUser={setUser} />}
@@ -89,6 +88,10 @@ function App() {
                 <Route 
                   path="/forgotpassword"
                   element={<ForgotPassword />}
+                />
+                <Route
+                  path="/profile"
+                  element={<ProfilePage/>}
                 />
               </Routes>
             </main>

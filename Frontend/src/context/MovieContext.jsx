@@ -9,6 +9,7 @@ export const MovieProvider = ({ children }) => {
   const [watchlist, setWatchlist] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState({ type: null, id: null });
 
   const token = localStorage.getItem("movieHub_token") || sessionStorage.getItem("movieHub_token");
 
@@ -60,6 +61,8 @@ export const MovieProvider = ({ children }) => {
       return; 
     }
 
+    setActionLoading({ type, id: movie.id });
+
     try {
       const { data } = await api.post("/api/users/update-list", { type, movie });
       setWatchlist(data.watchlist || []);
@@ -67,6 +70,9 @@ export const MovieProvider = ({ children }) => {
     } catch (err) {
       console.error(`Error updating ${type}:`, err);
     }
+    finally {
+    setActionLoading({ type: null, id: null });
+  }
   };
 
   const updateFavouriteNote = (movieId, note) => {
@@ -102,6 +108,7 @@ export const MovieProvider = ({ children }) => {
         removeFromFavourites,
         updateFavouriteNote,
         loading,
+        actionLoading,
       }}
     >
       {children}

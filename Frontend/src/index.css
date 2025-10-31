@@ -70,4 +70,38 @@
 button {
   cursor: pointer;
 }
+/* Smooth zoom-in then zoom-out */
+@keyframes zoomInOut {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  95% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 
+.animate-zoomInOut {
+  animation: zoomInOut 2s ease-in-out;
+}
+
+/* Typewriter effect (no blinking bar) */
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 2s steps(15, end) 2s forwards;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 13ch; /* "The Movie Hub" length */
+  }
+}

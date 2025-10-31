@@ -5,8 +5,8 @@ export default function Footer() {
   return (
     <footer className="bg-[#0a0a0a] text-gray-400 border-t border-gray-800 py-5">
       <div
-        className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between 
-                   gap-4 text-sm px-4"
+        className="max-w-full mx-auto flex flex-col md:flex-row items-center justify-between 
+                   gap-4 text-sm px-16"
       >
         {/* Left Section - Brand */}
         <p className="text-center md:text-left">
