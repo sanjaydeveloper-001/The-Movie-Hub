@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import Banner from "../Components/Banner";
 import MovieGrid from "../Components/MovieGrid";
@@ -6,6 +6,7 @@ import FilterBar from "../Components/FilterBar";
 import Pagination from "../Components/Pagination";
 import Intro from "../Components/Intro";
 import { useNavigate } from "react-router-dom";
+import { MovieContext } from "../context/MovieContext";
 
 const API_KEY = import.meta.env.VITE_TMDB_API;
 
@@ -18,8 +19,7 @@ export default function Home() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [intro, setIntro] = useState(() => !sessionStorage.getItem("introShown"));
   const [query, setQuery] = useState("");
-  const [lang, setLang] = useState(() => localStorage.getItem("localUserLanguage") || "ta");
-
+  const { lang } = useContext(MovieContext);
   const navigate = useNavigate();
 
   const today = new Date();
@@ -125,7 +125,6 @@ export default function Home() {
       {intro ? (
         <Intro
           onFinish={() => setIntro(false)}
-          setLang={setLang}
           setQuery={setQuery}
         />
       ) : (

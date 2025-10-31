@@ -2,9 +2,12 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import Logo from "../assets/Logo.png";
+import { MovieContext } from "../context/MovieContext";
+import { useContext } from "react";
 
-export default function Header({ user, setUser }) {
+export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useContext(MovieContext);
   const navigate = useNavigate();
 
   const redButton =

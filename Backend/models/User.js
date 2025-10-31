@@ -25,8 +25,9 @@ const userSchema = new mongoose.Schema(
     isGoogleUser: { type: Boolean, default: false },
     watchlist: { type: [movieSchema], default: [] }, 
     favourites: { type: [movieSchema], default: [] },
-    resetCode: String,
-    resetCodeExpire: Date,
+    resetCode: {type: String},
+    resetCodeExpire: {type: Date},
+    language: { type: String, default: "" },
   },
   { timestamps: true }
 );

@@ -6,8 +6,8 @@ import { MdMovieFilter } from "react-icons/md";
 import { BsBookmarkHeartFill } from "react-icons/bs";
 import { toast } from "react-toastify";
 
-export default function Watchlist({ user }) {
-  const { watchlist } = useContext(MovieContext);
+export default function Watchlist() {
+  const { user, watchlist } = useContext(MovieContext);
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -31,7 +31,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/users/forgotpassword", { email });
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_LINK}/api/users/forgotpassword`, { email });
       setMessage(res.data.message);
       setStep(2);
     } catch (error) {
@@ -60,7 +60,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/users/resetpassword", {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_LINK}/api/users/resetpassword`, {
         email,
         code,
         newPassword,
@@ -198,7 +198,7 @@ export default function ForgotPassword() {
               {message && (
                 <p
                   className={`text-center text-sm ${
-                    message.includes("success") || message.includes("Reset")
+                    message.includes("successfully") || message.includes("Reset")
                       ? "bg-green-950/50 text-green-400 border-green-800"
                       : "bg-red-950/30 text-red-400 border-red-800"
                   } py-2 rounded-lg border`}

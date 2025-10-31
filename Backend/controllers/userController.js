@@ -38,6 +38,8 @@ export const googleLogin = async (req, res) => {
         photo: picture || "",
         isGoogleUser: true,
       });
+
+      await sendWelcomeEmail(email, user.username, true);
     }
 
     const jwtToken = generateToken(user._id);
@@ -79,10 +81,11 @@ export const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const exists = await User.findOne({ email });
-    if (exists)
-      return res.status(400).json({ message: "User already exists" });
+    if (exists) return res.status(400).json({ message: "User already exists" });
 
     const user = await User.create({ username, email, password });
+
+    await sendWelcomeEmail(email, username, false);
     res.status(201).json({
       _id: user._id,
       username: user.username,
@@ -94,13 +97,77 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// ---------------- SEND WELCOME EMAIL ----------------
+const sendWelcomeEmail = async (email, username, isGoogleUser = false) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const subject = `🎬 Welcome to MovieHub, ${username}!`;
+    const message = isGoogleUser
+      ? `
+Hello ${username},
+
+We're thrilled to have you onboard! You've successfully joined *MovieHub* using your Google account.  
+Start exploring your favorite movies, track watchlists, and add notes about what you love!
+
+✨ Features you can enjoy:
+- Save your favorites & watchlist
+- Write notes for each movie
+- View the latest movie details
+
+Thank you for joining our cinematic journey!  
+Keep watching, keep exploring 🍿
+
+Warm regards,  
+🎥 The MovieHub Team  
+help: ${process.env.EMAIL_USER}
+      `
+      : `
+Hello ${username},
+
+Your account has been successfully created on *MovieHub*!  
+You can now log in and start saving your favorite movies and watchlists.
+
+✨ Here's what you can do:
+- Add your favorites & notes
+- Discover trending movies
+- Create personalized collections
+
+Welcome aboard, movie lover! 🎬  
+Thank you for being part of our community.  
+
+Warm regards,  
+🎥 The MovieHub Team  
+help: ${process.env.EMAIL_USER}
+      `;
+
+    await transporter.sendMail({
+      from: `"MovieHub Support" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject,
+      text: message,
+    });
+
+    console.log(`✅ Welcome email sent to ${email}`);
+  } catch (err) {
+    console.error("❌ Failed to send welcome email:", err);
+  }
+};
+
 // ---------------- LOGIN USER ----------------
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
-
+    if (user.isGoogleUser)
+      return res.status(400).json({ message: "Please use Google login" });
     if (await user.matchPassword(password)) {
       res.json({
         _id: user._id,
@@ -154,7 +221,7 @@ export const changePhoto = async (req, res) => {
     // Delete old photo if exists
     if (user.photo && user.photo.startsWith(`${req.protocol}`)) {
       const oldPath = user.photo.split(`${req.get("host")}/`)[1];
-    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
 
     user.photo = `${req.protocol}://${req.get("host")}/${
@@ -198,21 +265,43 @@ export const changePassword = async (req, res) => {
   try {
     const { current, new: newPass } = req.body;
     const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.json({ message: "User not found" });
 
     if (!user.isGoogleUser) {
       const isMatch = await bcrypt.compare(current, user.password);
-      if (!isMatch)
-        return res.status(400).json({ message: "Incorrect current password" });
+      if (!isMatch) return res.json({ message: "Incorrect current password" });
     }
-
+    const isSamePassword = await bcrypt.compare(newPass, user.password);
+    if (isSamePassword)
+      return res.json({
+        message: "You recently used this password Please try new one",
+      });
     user.password = newPass;
     await user.save();
 
     res.json({ message: "Password changed successfully" });
   } catch (error) {
-    console.error("Change password error:", error);
     res.status(500).json({ message: "Failed to change password" });
+  }
+};
+
+// ---------------- UPDATE LANGUAGE ----------------
+export const updateLanguage = async (req, res) => {
+  try {
+    const { email, language } = req.body;
+    if (!email || !language)
+      return res.status(400).json({ message: "Email and language required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.language = language;
+    await user.save();
+
+    res.json({ message: "Language updated successfully", language });
+  } catch (error) {
+    console.error("Error updating language:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -240,15 +329,17 @@ export const updateUserLists = async (req, res) => {
 };
 
 // ---------------- SEND RESET CODE ----------------
+// ---------------- SEND CODE FOR PASSWORD CHANGE ----------------
 export const sendCode = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-    user.resetCode = resetCode;
-    user.resetCodeExpire = Date.now() + 10 * 60 * 1000;
+    // Generate a 6-digit verification code
+    const changeCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.changeCode = changeCode;
+    user.changeCodeExpire = Date.now() + 10 * 60 * 1000; // expires in 10 mins
     await user.save();
 
     const transporter = nodemailer.createTransport({
@@ -262,16 +353,29 @@ export const sendCode = async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Password Reset Code",
-      text: `Your password reset code is ${resetCode}. It expires in 10 minutes.`,
+      subject: "Confirm Your Password Change Request 🔐",
+      text: `
+Hi ${user.username || "User"},
+
+We received a request to change your MovieHub account password.
+
+Your verification code is: ${changeCode}
+
+⚠️ This code will expire in 10 minutes. If you didn’t request a password change, please ignore this message — your account is still secure.
+
+Best regards,  
+The MovieHub Security Team  
+Email Support: ${process.env.EMAIL_USER}
+      `,
     });
 
-    res.json({ message: "Reset code sent to email" });
+    res.json({ message: "Code sent to your email successfully." });
   } catch (error) {
-    console.error("ForgotPassword error:", error);
+    console.error("SendChangePasswordCode error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ---------------- RESET PASSWORD ----------------
 export const resetPassword = async (req, res) => {
@@ -280,14 +384,14 @@ export const resetPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.resetCode !== code || Date.now() > user.resetCodeExpire)
+    if (user.resetCode !== code )
       return res.status(400).json({ message: "Invalid or expired code" });
 
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
     if (isSamePassword)
-      return res
-        .status(400)
-        .json({ message: "You recently used this password." });
+      return res.status(400).json({
+        message: "You recently used this password Please try new one.",
+      });
 
     user.password = newPassword;
     user.resetCode = null;

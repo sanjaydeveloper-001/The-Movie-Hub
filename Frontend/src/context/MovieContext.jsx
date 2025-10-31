@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast, Bounce } from "react-toastify";
@@ -6,12 +5,15 @@ import { toast, Bounce } from "react-toastify";
 export const MovieContext = createContext();
 
 export const MovieProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
   const [favourites, setFavourites] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({ type: null, id: null });
+  const [lang, setLang] = useState(()=> localStorage.getItem("localUserLanguage") || "ta");
 
-  const token = localStorage.getItem("movieHub_token") || sessionStorage.getItem("movieHub_token");
+  const token =
+    localStorage.getItem("movieHub_token") ||
+    sessionStorage.getItem("movieHub_token");
 
   const api = useMemo(() => {
     return axios.create({
@@ -23,17 +25,17 @@ export const MovieProvider = ({ children }) => {
   useEffect(() => {
     const fetchUserLists = async () => {
       if (!token) {
-        setLoading(false);
         return;
       }
       try {
         const { data } = await api.get("/api/users/profile");
+        setUser(data);
+        setLang(data.language || localStorage.getItem("localUserLanguage") || "ta");
         setWatchlist(data.watchlist || []);
         setFavourites(data.favourites || []);
       } catch (err) {
-        console.error("Error fetching user lists:", err);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching user:", err);
+        setUser(null);
       }
     };
 
@@ -42,23 +44,19 @@ export const MovieProvider = ({ children }) => {
 
   const updateList = async (type, movie) => {
     if (!token) {
-      toast.error("Please Login to Save !", {
+      toast.error("Please Login to Save!", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
         theme: "dark",
         style: {
-          background: "#161616", 
-          color: "#ffffff",      
+          background: "#161616",
+          color: "#ffffff",
           border: "2px solid #ff4c4c",
-          fontWeight: "semi-bold",
         },
         transition: Bounce,
       });
-      return; 
+      return;
     }
 
     setActionLoading({ type, id: movie.id });
@@ -69,20 +67,16 @@ export const MovieProvider = ({ children }) => {
       setFavourites(data.favourites || []);
     } catch (err) {
       console.error(`Error updating ${type}:`, err);
+    } finally {
+      setActionLoading({ type: null, id: null });
     }
-    finally {
-    setActionLoading({ type: null, id: null });
-  }
   };
 
   const updateFavouriteNote = (movieId, note) => {
     setFavourites((prev) =>
-      prev.map((m) =>
-        m.id === movieId ? { ...m, userNote: note } : m
-      )
+      prev.map((m) => (m.id === movieId ? { ...m, userNote: note } : m))
     );
   };
-
 
   const addToWatchlist = (movie) => updateList("watchlist", movie);
   const addToFavourites = (movie) => updateList("favourites", movie);
@@ -95,11 +89,13 @@ export const MovieProvider = ({ children }) => {
     if (movie) updateList("favourites", movie);
   };
 
-  if (loading) return <div>Loading...</div>;
-
   return (
     <MovieContext.Provider
       value={{
+        user,
+        lang,
+        setUser,
+        setLang,
         watchlist,
         favourites,
         addToWatchlist,
@@ -107,7 +103,6 @@ export const MovieProvider = ({ children }) => {
         removeFromWatchlist,
         removeFromFavourites,
         updateFavouriteNote,
-        loading,
         actionLoading,
       }}
     >

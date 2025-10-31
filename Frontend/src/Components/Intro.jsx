@@ -1,23 +1,24 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../assets/Logo.png";
 import { FaArrowRight, FaLanguage, FaUserLock, FaFilm } from "react-icons/fa";
+import { MovieContext } from "../context/MovieContext";
 
-export default function Intro({ onFinish, setLang, setQuery }) {
+export default function Intro({ onFinish, setQuery }) {
   const [showLogo, setShowLogo] = useState(true);
   const [step, setStep] = useState(1);
   const [selectedLang, setSelectedLang] = useState("en");
   const [showSteps, setShowSteps] = useState(false);
+  const {lang, setLang} = useContext(MovieContext);
 
   useEffect(() => {
     const savedLang = localStorage.getItem("localUserLanguage");
 
     const timer = setTimeout(() => {
+      setShowLogo(false);
       if (savedLang) {
-        setShowLogo(false);
         finishIntro();
       } else {
-        setShowLogo(false);
         setShowSteps(true);
       }
     }, 5000);
@@ -27,19 +28,27 @@ export default function Intro({ onFinish, setLang, setQuery }) {
 
   // ✅ Supported languages
   const languages = [
-    { code: "en", name: "English" },
-    { code: "ta", name: "Tamil" },
-    { code: "hi", name: "Hindi" },
-    { code: "ml", name: "Malayalam" },
-    { code: "te", name: "Telugu" },
-    { code: "fr", name: "French" },
-    { code: "es", name: "Spanish" },
-    { code: "ko", name: "Korean" },
-  ];
+  { code: "ta", name: "Tamil" },
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "te", name: "Telugu" },
+  { code: "ml", name: "Malayalam" },
+  { code: "kn", name: "Kannada" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+  { code: "ja", name: "Japanese" },
+  { code: "ko", name: "Korean" },
+  { code: "zh", name: "Chinese" },
+  { code: "it", name: "Italian" },
+  { code: "ru", name: "Russian" },
+  { code: "ar", name: "Arabic" },
+];
 
   // ✅ Finish function
   const finishIntro = () => {
     sessionStorage.setItem("introShown", "true");
+    localStorage.setItem('localUserLanguage', selectedLang);
     onFinish();
   };
 

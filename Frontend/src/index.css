@@ -13,7 +13,9 @@
 .scrollbar-dark::-webkit-scrollbar {
   height: 8px;
 }
-
+.scrollbar-thin::-webkit-scrollbar{
+  width: 8px;
+}
 .scrollbar-dark::-webkit-scrollbar-track {
   background: #1c1c1c;
   border-radius: 10px;
@@ -104,4 +106,27 @@ button {
   to {
     width: 13ch; /* "The Movie Hub" length */
   }
+}
+
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #000; /* same as your app background */
+  color-scheme: dark;
+  overflow-x: hidden;
+  height: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  background-color: #000; /* ensure full black */
+  min-height: 100vh;
+}
+body {
+  background-color: #000;
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
 }

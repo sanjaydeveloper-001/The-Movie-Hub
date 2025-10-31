@@ -6,13 +6,13 @@ import { FaHeart } from "react-icons/fa";
 import { RiMovie2Fill } from "react-icons/ri";
 import { toast } from "react-toastify";
 
-export default function Favourites({ user }) {
+export default function Favourites() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   
-  const { favourites } = useContext(MovieContext);
+  const { user, favourites } = useContext(MovieContext);
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -5,15 +5,17 @@ import axios from "axios";
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { GoogleLogin } from "@react-oauth/google";
 import LoadingOverlay from "../Components/LoadingOverlay";
+import { useContext } from "react";
+import { MovieContext } from "../context/MovieContext";
 
-export default function Login({ setUser }) {
+export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const {setUser} = useContext(MovieContext);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

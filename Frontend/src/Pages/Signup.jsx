@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { GoogleLogin } from "@react-oauth/google";
 import LoadingOverlay from "../Components/LoadingOverlay";
+import { MovieContext } from "../context/MovieContext";
 
-export default function Signup({ setUser }) {
+export default function Signup() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: "",
@@ -19,12 +20,13 @@ export default function Signup({ setUser }) {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const { setUser } = useContext(MovieContext);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
   const handleChange = (e) => {
+    setError("");
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
@@ -36,6 +38,7 @@ export default function Signup({ setUser }) {
         `${import.meta.env.VITE_BACKEND_LINK}/api/users/google-login`,
         { token: response.credential }
       );
+      console.log(res);
       setUser(res.data);
       localStorage.setItem("movieHub_token", res.data.token);
       navigate("/");
@@ -46,17 +49,50 @@ export default function Signup({ setUser }) {
     }
   };
 
+  const verifyEmail = async (email) => {
+    try {
+      const response = await axios.get(
+        `http://apilayer.net/api/check?access_key=${import.meta.env.VITE_EMAIL_API_KEY}&email=${email}&smtp=1&format=1`
+      );
+      return response.data;
+    } catch (err) {
+      console.error("Email verification failed:", err);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-    // ✅ 1. Check password match
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match!");
+    const usernameRegex = /^[a-zA-Z0-9._@]+$/;
+    if (!usernameRegex.test(form.username)) {
+      setError(
+        "Username can only contain letters, numbers, dots, underscores, and @."
+      );
+      setLoading(false);
       return;
     }
 
-    // ✅ 2. Check password strength
+    const verify = await verifyEmail(form.email);
+
+    if (!verify.format_valid) {
+      setError("Please enter a real, active email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (verify.did_you_mean) {
+      setForm({ ...form, email: verify.did_you_mean });
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match!");
+      setLoading(false);
+      return;
+    }
+
     const passwordRegex =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-={}[\]|:;"'<>,.?/]).+$/;
 
@@ -64,12 +100,13 @@ export default function Signup({ setUser }) {
       setError(
         "Password must contain at least one letter, one number, and one special character."
       );
+      setLoading(false);
       return;
     }
 
-    // ✅ 3. Check if user agreed
     if (!form.agree) {
       setError("You must agree to the terms & conditions.");
+      setLoading(false);
       return;
     }
 
