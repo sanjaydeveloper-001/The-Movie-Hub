@@ -19,7 +19,7 @@ export default function Home() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [intro, setIntro] = useState(() => !sessionStorage.getItem("introShown"));
   const [query, setQuery] = useState("");
-  const { lang } = useContext(MovieContext);
+  const { lang, setLang } = useContext(MovieContext);
   const navigate = useNavigate();
 
   const today = new Date();
@@ -108,8 +108,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const savedFilters = JSON.parse(localStorage.getItem("movieFilters"));
-    const savedQuery = localStorage.getItem("searchQuery");
+    const savedFilters = JSON.parse(sessionStorage.getItem("movieFilters"));
+    const savedQuery = sessionStorage.getItem("searchQuery");
 
     if (savedQuery) {
       handleSearch(savedQuery);
@@ -118,7 +118,7 @@ export default function Home() {
     } else {
       fetchDefaultMovies();
     }
-  }, [page, lang]);
+  }, [page, setLang]);
 
   return (
     <>

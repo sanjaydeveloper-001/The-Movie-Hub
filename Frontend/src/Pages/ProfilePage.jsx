@@ -6,7 +6,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   FaHeart,
   FaBookmark,
-  FaEdit,
   FaSave,
   FaTimes,
   FaLock,
@@ -19,11 +18,12 @@ import { MdDelete, MdPhotoCamera } from "react-icons/md";
 import { motion } from "framer-motion";
 import LanguageSelector from "../Components/langSelection";
 import LoadingOverlay from "../Components/LoadingOverlay";
+import { languages } from "../utils/Funtions";
 
 export default function ProfilePage() {
   const { user, setUser, favourites, watchlist } = useContext(MovieContext);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState("");
   const [editPass, setEditPassword] = useState(false);
   const [photoPreview, setPhotoPreview] = useState("");
   const [usernameEdit, setUsernameEdit] = useState(false);
@@ -52,6 +52,10 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!token) {
       toast.error("You must be logged in to view this page");
       navigate("/login");
@@ -70,7 +74,7 @@ export default function ProfilePage() {
   const handleUpdateUsername = async () => {
     if (!newUsername.trim()) return toast.error("Username cannot be empty");
     try {
-      setLoading(true);
+      setLoading("Updating UserName");
       const { data } = await api.put("/api/users/change-username", {
         username: newUsername,
       });
@@ -80,7 +84,7 @@ export default function ProfilePage() {
     } catch {
       toast.error("Failed to update username");
     } finally {
-      setLoading(false);
+      setLoading("");
     }
   };
 
@@ -91,7 +95,7 @@ export default function ProfilePage() {
     setPhotoPreview(URL.createObjectURL(file));
 
     try {
-      setLoading(true);
+      setLoading("Updating Photo");
       const formData = new FormData();
       formData.append("photo", file);
       const { data } = await api.put("/api/users/change-photo", formData, {
@@ -102,13 +106,13 @@ export default function ProfilePage() {
     } catch {
       toast.error("Failed to update photo");
     } finally {
-      setLoading(false);
+      setLoading("");
     }
   };
 
   const handleDeletePhoto = async () => {
     try {
-      setLoading(true);
+      setLoading("Deleting Photo");
       await api.put("/api/users/delete-photo");
       setUser((prev) => ({ ...prev, photo: "" }));
       setPhotoPreview("");
@@ -116,7 +120,7 @@ export default function ProfilePage() {
     } catch {
       toast.error("Failed to delete photo");
     } finally {
-      setLoading(false);
+      setLoading("");
     }
   };
 
@@ -126,7 +130,7 @@ export default function ProfilePage() {
       return;
     }
     try {
-      setLoading(true);
+      setLoading("Updating Password");
       const res = await api.put("/api/users/change-password", passwords);
       let message = res.data.message;
       if (message === "Password changed successfully") {
@@ -139,25 +143,30 @@ export default function ProfilePage() {
     } catch (err) {
       toast.error(err.message);
     } finally {
-      setLoading(false);
+      setLoading("");
     }
   };
 
   const handleSaveLanguage = async () => {
     try {
-      setLoading(true);
+      setLoading("Updating Language");
       const { data } = await api.put("/api/users/change-language", {
         email: user.email,
         language: selectedLanguage,
       });
       setUser((prev) => ({ ...prev, language: data.language }));
       localStorage.setItem("localUserLanguage", data.language);
-      toast.success(`Language set to ${selectedLanguage.toUpperCase()}`);
+
+      const langName =
+      languages.find((lang) => lang.code === selectedLanguage)?.name ||
+      selectedLanguage.toUpperCase();
+
+      toast.success(`Language set to ${langName}`);
       setEditingLang(false);
     } catch {
       toast.error("Failed to update language");
     } finally {
-      setLoading(false);
+      setLoading("");
     }
   };
 
@@ -173,7 +182,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-[#0a0a0a] text-gray-200 px-5 my-10">
-      {loading && <LoadingOverlay text="Loading Profile..." />}
+      {loading.length > 0 && <LoadingOverlay text={loading} />}
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}

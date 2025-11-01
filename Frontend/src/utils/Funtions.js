@@ -14,6 +14,24 @@ const languageMap = {
   zh: "Chinese",
 };
 
+export const languages = [
+  { code: "ta", name: "Tamil" },
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "te", name: "Telugu" },
+  { code: "ml", name: "Malayalam" },
+  { code: "kn", name: "Kannada" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+  { code: "ja", name: "Japanese" },
+  { code: "ko", name: "Korean" },
+  { code: "zh", name: "Chinese" },
+  { code: "it", name: "Italian" },
+  { code: "ru", name: "Russian" },
+  { code: "ar", name: "Arabic" },
+];
+
 export const getLanguageName = (code) =>
   languageMap[code?.toLowerCase()] || code?.toUpperCase() || "Unknown";
 

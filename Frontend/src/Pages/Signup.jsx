@@ -25,6 +25,7 @@ export default function Signup() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  
   const handleChange = (e) => {
     setError("");
     const { name, value, type, checked } = e.target;
@@ -49,18 +50,6 @@ export default function Signup() {
     }
   };
 
-  const verifyEmail = async (email) => {
-    try {
-      const response = await axios.get(
-        `http://apilayer.net/api/check?access_key=${import.meta.env.VITE_EMAIL_API_KEY}&email=${email}&smtp=1&format=1`
-      );
-      return response.data;
-    } catch (err) {
-      console.error("Email verification failed:", err);
-      return null;
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -74,18 +63,37 @@ export default function Signup() {
       setLoading(false);
       return;
     }
+    // ✅ Email verification
+const verify = await axios.get(
+  `https://apilayer.net/api/check?access_key=${
+    import.meta.env.VITE_EMAIL_API_KEY
+  }&email=${form?.email}&smtp=1&format=1`
+);
 
-    const verify = await verifyEmail(form.email);
+console.log("Email verification result:", verify.data);
 
-    if (!verify.format_valid) {
-      setError("Please enter a real, active email address.");
-      setLoading(false);
-      return;
-    }
+const { format_valid, mx_found, smtp_check, score, did_you_mean } = verify.data;
 
-    if (verify.did_you_mean) {
-      setForm({ ...form, email: verify.did_you_mean });
-    }
+// 💡 If API suggests a corrected email
+if (did_you_mean && did_you_mean !== form.email) {
+  setError(
+    `Did you mean "${did_you_mean}"? Please review and Try again.`
+  );
+  setLoading(false);
+  return; // stop this submission
+}
+
+// 🧩 Smarter validation logic
+if (!format_valid || !mx_found || score < 0.6) {
+  setError("Please enter a valid, active email address.");
+  setLoading(false);
+  return;
+}
+
+if (!smtp_check) {
+  console.warn("SMTP check failed (common for Gmail, Outlook, etc.)");
+}
+
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match!");
