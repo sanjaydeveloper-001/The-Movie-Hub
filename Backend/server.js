@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import axios from "axios";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 
