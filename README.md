@@ -9,7 +9,7 @@ This version enhances the original Movie Hub by adding **user authentication, fa
 
 - 🔐 **User Authentication** – Register, login, and manage sessions securely.  
 - ❤️ **Favorites System** – Save and manage your favorite movies.  
-- 🔖 **Bookmark Movies** – Keep track of movies to watch later.  
+- 🔖 **Watchlist Movies** – Keep track of movies to watch later.  
 - 👤 **User Profile Page** – View and update your personal details.  
 - 🔄 **Password Management** – Change or reset password via email verification.  
 - 🎞️ **Dynamic Movie Data** – All movie details fetched using the **TMDB API**.  
@@ -44,8 +44,7 @@ This version enhances the original Movie Hub by adding **user authentication, fa
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/your-username/movie-hub-v2.git
-cd movie-hub-v2
+git clone https://github.com/sanjaydeveloper-001/The-Movie-Hub/
 ```
 
 ### 2️⃣ Install dependencies
@@ -71,12 +70,15 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 EMAIL_USER=your_email@example.com
 EMAIL_PASS=your_email_password
+GOOGLE_CLIENT_ID=your_client_id
 ```
 
 **Frontend .env example:**
 ```
 VITE_TMDB_API=your_tmdb_api_key
 VITE_BACKEND_URL=http://localhost:5000
+VITE_GOOGLE_AUTH_CLIENT_ID=your_client_id
+VITE_EMAIL_API_KEY=your_abstract_email_api_key
 ```
 
 ### 4️⃣ Run the app
@@ -124,14 +126,7 @@ movie-hub-v2/
 ## 🌐 Live Demo
 
 🔗 **Live Link:** [Add your deployed site link here]  
-📁 **Backend API:** [Add backend API link here]  
-💻 **GitHub Repository:** [https://github.com/your-username/movie-hub-v2](https://github.com/your-username/movie-hub-v2)
-
----
-
-## 📸 Screenshots
-
-*(Add your screenshots here — login page, home page, profile page, etc.)*
+💻 **GitHub Repository:** [https://github.com/sanjaydeveloper-001/The-Movie-Hub/](https://github.com/sanjaydeveloper-001/The-Movie-Hub/)
 
 ---
 
@@ -159,8 +154,8 @@ While building this version, I learned how to:
 ## 📧 Contact
 
 Created by **Soldra Machan** – feel free to connect with me!  
-🔗 [LinkedIn](https://www.linkedin.com/in/your-linkedin-profile)  
-📩 Email: your-email@example.com
+🔗 [LinkedIn](https://www.linkedin.com/in/josanweb)  
+📩 Email: josephstudent001@gmail.com
 
 ---
 
