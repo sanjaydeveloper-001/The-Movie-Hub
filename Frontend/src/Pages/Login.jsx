@@ -34,6 +34,7 @@ export default function Login() {
       );
       setUser(res.data);
       localStorage.setItem("movieHub_token", res.data.token);
+      localStorage.setItem("userIn",true);
       navigate("/");
     } catch (err) {
       setError("Google login failed");
@@ -62,6 +63,7 @@ export default function Login() {
       else
         sessionStorage.setItem("movieHub_token", data.token);
       setUser(data);
+      localStorage.setItem("userIn",true);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Network error. Try again!");

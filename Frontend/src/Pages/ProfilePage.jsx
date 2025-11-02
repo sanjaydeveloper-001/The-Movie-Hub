@@ -173,6 +173,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     localStorage.removeItem("movieHub_token");
     sessionStorage.removeItem("movieHub_token");
+    localStorage.removeItem("userIn");
     setUser(null);
     toast.success("Logged out successfully");
     navigate("/login");

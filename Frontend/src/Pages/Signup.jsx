@@ -25,7 +25,7 @@ export default function Signup() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   const handleChange = (e) => {
     setError("");
     const { name, value, type, checked } = e.target;
@@ -42,6 +42,7 @@ export default function Signup() {
       console.log(res);
       setUser(res.data);
       localStorage.setItem("movieHub_token", res.data.token);
+      localStorage.setItem("userIn", true);
       navigate("/");
     } catch (err) {
       setError("Google login failed");
@@ -63,37 +64,31 @@ export default function Signup() {
       setLoading(false);
       return;
     }
-    // ✅ Email verification
-const verify = await axios.get(
-  `https://apilayer.net/api/check?access_key=${
-    import.meta.env.VITE_EMAIL_API_KEY
-  }&email=${form?.email}&smtp=1&format=1`
-);
+    const verify = await axios.get(
+      `https://apilayer.net/api/check?access_key=${
+        import.meta.env.VITE_EMAIL_API_KEY
+      }&email=${form?.email}&smtp=1&format=1`
+    );
 
-console.log("Email verification result:", verify.data);
+    console.log("Email verification result:", verify.data);
+    const { format_valid, mx_found, smtp_check, score, did_you_mean } =
+      verify.data;
 
-const { format_valid, mx_found, smtp_check, score, did_you_mean } = verify.data;
+    if (did_you_mean && did_you_mean !== form.email) {
+      setError(`Did you mean "${did_you_mean}"? Please review and Try again.`);
+      setLoading(false);
+      return; 
+    }
 
-// 💡 If API suggests a corrected email
-if (did_you_mean && did_you_mean !== form.email) {
-  setError(
-    `Did you mean "${did_you_mean}"? Please review and Try again.`
-  );
-  setLoading(false);
-  return; // stop this submission
-}
+    if (!format_valid || !mx_found || score < 0.6) {
+      setError("Please enter a valid, active email address.");
+      setLoading(false);
+      return;
+    }
 
-// 🧩 Smarter validation logic
-if (!format_valid || !mx_found || score < 0.6) {
-  setError("Please enter a valid, active email address.");
-  setLoading(false);
-  return;
-}
-
-if (!smtp_check) {
-  console.warn("SMTP check failed (common for Gmail, Outlook, etc.)");
-}
-
+    if (!smtp_check) {
+      console.warn("SMTP check failed (common for Gmail, Outlook, etc.)");
+    }
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match!");
@@ -124,9 +119,7 @@ if (!smtp_check) {
         `${import.meta.env.VITE_BACKEND_LINK}/api/users/signup`,
         form
       );
-      localStorage.setItem("movieHub_token", data.token);
-      setUser(data);
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Network error. Try again!");
     } finally {

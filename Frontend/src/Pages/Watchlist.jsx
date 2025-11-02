@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 export default function Watchlist() {
   const { user, watchlist } = useContext(MovieContext);
   const navigate = useNavigate();
+  const checkUser = localStorage.getItem("userIn");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -16,7 +17,7 @@ export default function Watchlist() {
 
   
   useEffect(() => {
-    if (!user) {
+    if (!checkUser) {
     navigate("/login");
     toast("Please login to view your watchlist", {
       position: "top-right",

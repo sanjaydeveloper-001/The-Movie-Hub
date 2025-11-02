@@ -13,10 +13,11 @@ export default function Favourites() {
   }, []);
   
   const { user, favourites } = useContext(MovieContext);
+  const checkUser = localStorage.getItem("userIn");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    if (!checkUser) {
     navigate("/login");
     toast("Please login to view your favouritelist", {
           position: "top-right",

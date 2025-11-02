@@ -19,7 +19,7 @@ export const MovieProvider = ({ children }) => {
     return axios.create({
       baseURL: import.meta.env.VITE_BACKEND_LINK,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    }); 
   }, [token]);
 
   useEffect(() => {
