@@ -9,27 +9,42 @@
 }
 
 
-/* Dark theme scrollbar for cast section */
-.scrollbar-dark::-webkit-scrollbar {
-  height: 8px;
+/* Global Scrollbar — Chrome, Edge, Brave, Opera */
+::-webkit-scrollbar {
+  width: 12px;   /* increased width */
+  height: 12px;
 }
-.scrollbar-thin::-webkit-scrollbar{
-  width: 8px;
+
+/* Remove up/down arrows */
+::-webkit-scrollbar-button {
+  display: none;
 }
-.scrollbar-dark::-webkit-scrollbar-track {
-  background: #1c1c1c;
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #111;          /* darker theme */
   border-radius: 10px;
 }
 
-.scrollbar-dark::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, #ff1e1e, #ff4646);
+/* Thumb */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #a60404, #a60404);
   border-radius: 10px;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.scrollbar-dark::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(90deg, #ff4646, #ff1e1e);
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #a60404, #a60404);
 }
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: 8px;
+  scrollbar-color: #a60404 #111; /* thumb | track */
+}
+
+
 
 
 

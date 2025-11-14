@@ -23,7 +23,7 @@ export default function LanguageSelector({
   }, []);
 
   return (
-    <div className="relative md:w-[220px]" ref={dropdownRef}>
+    <div className="relative " ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
         className="flex justify-between items-center w-full px-4 py-2 bg-[#1a1a1a] border border-gray-700 text-gray-200 rounded-lg
@@ -37,7 +37,7 @@ export default function LanguageSelector({
       </button>
 
       {open && (
-        <ul className="absolute z-50 mt-2 w-full bg-[#0d0d0d] border border-gray-700 rounded-lg shadow-lg max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-dark">
+        <ul className="absolute z-50 mt-2 w-full bg-[#0d0d0d] border border-gray-700 rounded-lg shadow-lg max-h-[150px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-dark">
           {languages.map((lang) => (
             <li
               key={lang.code}

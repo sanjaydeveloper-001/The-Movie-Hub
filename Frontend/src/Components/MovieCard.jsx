@@ -4,6 +4,7 @@ import { MovieContext } from "../context/MovieContext";
 import { useNavigate } from "react-router-dom";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { BsBookmarkPlus, BsBookmarkFill } from "react-icons/bs";
+import { toast } from "react-toastify";
 
 export default function MovieCard({ movie }) {
   const {
@@ -20,18 +21,31 @@ export default function MovieCard({ movie }) {
 
   const isInWatchlist = watchlist.some((m) => m.id === movie.id);
   const isInFavourites = favourites.some((m) => m.id === movie.id);
+  const checkUser = localStorage.getItem("userIn");
 
   const handleWatchlist = (e) => {
     e.stopPropagation();
+    if (!checkUser) {
+      toast.error("Please login to add to watchlist");
+      return;
+    }
     if (isInWatchlist) removeFromWatchlist(movie.id);
     else addToWatchlist(movie);
   };
 
   const handleFavourites = (e) => {
     e.stopPropagation();
+    if (!checkUser) {
+      toast.error("Please login to add to favourites");
+      return;
+    }
     if (isInFavourites) removeFromFavourites(movie.id);
     else addToFavourites(movie);
   };
+
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : null;
 
   return (
     <>
@@ -41,26 +55,44 @@ export default function MovieCard({ movie }) {
         whileTap={{ scale: 0.97 }}
         className="group relative overflow-hidden cursor-pointer rounded-xl"
       >
-        {/* Poster */}
-        <img
-          src={
-            movie.poster_path
-              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-              : "https://via.placeholder.com/500x750?text=No+Image"
-          }
-          alt={movie.title}
-          className="
-            w-full 
-            h-40 sm:h-48 md:h-80 
-            object-cover 
-            rounded-xl 
-            group-hover:scale-105 
-            shadow-md 
-            hover:shadow-red-500/10 
-            transition-all 
-            duration-300
-          "
-        />
+        {/* Poster or fallback panel */}
+        {posterUrl ? (
+          <img
+            src={posterUrl}
+            alt={movie.title}
+            className="
+              w-full 
+              h-40 sm:h-48 md:h-80 
+              object-cover 
+              rounded-xl 
+              group-hover:scale-105 
+              shadow-md 
+              hover:shadow-red-500/10 
+              transition-all 
+              duration-300
+            "
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="
+              w-full 
+              h-40 sm:h-48 md:h-80 
+              rounded-xl 
+              bg-black/50 
+              flex items-center justify-center 
+              text-center
+              shadow-md
+              transition-all
+              duration-300
+            "
+            style={{fontFamily:"Unbounded"}}
+          >
+            <span className="px-5 text-sm sm:text-base md:text-md font-semibold text-white leading-tight">
+              {movie.title}
+            </span>
+          </div>
+        )}
 
         {/* Gradient Overlay */}
         <div
@@ -103,18 +135,16 @@ export default function MovieCard({ movie }) {
           <button
             onClick={handleWatchlist}
             disabled={
-              actionLoading.type === "watchlist" &&
-              actionLoading.id === movie.id
+              actionLoading.type === "watchlist" && actionLoading.id === movie.id
             }
             title={isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
             className={`
-    p-2 rounded-full bg-black/50 backdrop-blur-sm
-    transition-all duration-300 hover:scale-110 hover:bg-black/70
-    ${isInWatchlist ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
-  `}
+              p-2 rounded-full bg-black/50 backdrop-blur-sm
+              transition-all duration-300 hover:scale-110 hover:bg-black/70
+              ${isInWatchlist ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
+            `}
           >
-            {actionLoading.type === "watchlist" &&
-            actionLoading.id === movie.id ? (
+            {actionLoading.type === "watchlist" && actionLoading.id === movie.id ? (
               <span className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin block"></span>
             ) : isInWatchlist ? (
               <BsBookmarkFill className="text-sm sm:text-md md:text-xl drop-shadow-[0_0_6px_#3b82f6]" />
@@ -127,20 +157,16 @@ export default function MovieCard({ movie }) {
           <button
             onClick={handleFavourites}
             disabled={
-              actionLoading.type === "favourites" &&
-              actionLoading.id === movie.id
+              actionLoading.type === "favourites" && actionLoading.id === movie.id
             }
-            title={
-              isInFavourites ? "Remove from Favourites" : "Add to Favourites"
-            }
+            title={isInFavourites ? "Remove from Favourites" : "Add to Favourites"}
             className={`
-    p-2 rounded-full bg-black/50 backdrop-blur-sm 
-    transition-all duration-300 hover:scale-110 hover:bg-black/70 
-    ${isInFavourites ? "text-red-500" : "text-gray-300 hover:text-red-500"}
-  `}
+              p-2 rounded-full bg-black/50 backdrop-blur-sm 
+              transition-all duration-300 hover:scale-110 hover:bg-black/70 
+              ${isInFavourites ? "text-red-500" : "text-gray-300 hover:text-red-500"}
+            `}
           >
-            {actionLoading.type === "favourites" &&
-            actionLoading.id === movie.id ? (
+            {actionLoading.type === "favourites" && actionLoading.id === movie.id ? (
               <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin block"></span>
             ) : isInFavourites ? (
               <FaHeart className="text-sm sm:text-md md:text-xl drop-shadow-[0_0_6px_#ef4444]" />

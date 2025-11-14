@@ -9,7 +9,7 @@ export const MovieProvider = ({ children }) => {
   const [watchlist, setWatchlist] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [actionLoading, setActionLoading] = useState({ type: null, id: null });
-  const [lang, setLang] = useState(()=> localStorage.getItem("localUserLanguage") || "ta");
+  const [lang, setLang] = useState(()=> localStorage.getItem("localUserLanguage") || "en");
 
   const token =
     localStorage.getItem("movieHub_token") ||

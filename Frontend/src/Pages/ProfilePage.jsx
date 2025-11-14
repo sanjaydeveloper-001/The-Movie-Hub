@@ -50,24 +50,22 @@ export default function ProfilePage() {
     baseURL: import.meta.env.VITE_BACKEND_LINK,
     headers: { Authorization: `Bearer ${token}` },
   });
+  const { setLang } = useContext(MovieContext);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    if (!token) {
-      toast.error("You must be logged in to view this page");
-      navigate("/login");
-      return;
-    }
-
     if (user) {
       setNewUsername(user.username || "");
       setPhotoPreview(user.photo || "");
       setSelectedLanguage(
         user.language || localStorage.getItem("localUserLanguage") || "en"
       );
+    }
+    else{
+      navigate(-1);
     }
   }, [user, token, navigate]);
 
@@ -163,6 +161,7 @@ export default function ProfilePage() {
 
       toast.success(`Language set to ${langName}`);
       setEditingLang(false);
+      setLang(selectedLanguage);
     } catch {
       toast.error("Failed to update language");
     } finally {
@@ -176,7 +175,8 @@ export default function ProfilePage() {
     localStorage.removeItem("userIn");
     setUser(null);
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate(-1);
+    window.location.reload();
   };
 
   if (!user) return <LoadingOverlay text={"Loading Profile..."} />;
@@ -303,13 +303,16 @@ export default function ProfilePage() {
           </div>
 
           {/* Language */}
-          <div className="text-center mb-6 md:flex items-center justify-center gap-5">
-            <h3 className="text-lg font-semibold mb-2">🌐 Language :</h3>
-            <LanguageSelector
-              selectedLanguage={selectedLanguage}
-              setSelectedLanguage={setSelectedLanguage}
-              setEditingLang={setEditingLang}
-            />
+          <div className="text-center mb-6 items-center justify-center gap-5">
+            <div className="text-center md:flex items-center justify-center gap-5">
+              <h3 className="text-lg font-semibold mb-2">🌐 Language :</h3>
+              <div className="md:w-[220px]">{<LanguageSelector
+                selectedLanguage={selectedLanguage}
+                setSelectedLanguage={setSelectedLanguage}
+                setEditingLang={setEditingLang}
+              />}
+              </div>
+            </div>
             {editingLang && (
               <div className="flex gap-2 justify-center mt-3">
                 <button

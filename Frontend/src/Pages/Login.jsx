@@ -35,7 +35,7 @@ export default function Login() {
       setUser(res.data);
       localStorage.setItem("movieHub_token", res.data.token);
       localStorage.setItem("userIn",true);
-      navigate("/");
+      navigate(-1);
     } catch (err) {
       setError("Google login failed");
     } finally {

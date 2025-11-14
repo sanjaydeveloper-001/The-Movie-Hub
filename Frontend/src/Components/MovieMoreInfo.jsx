@@ -4,17 +4,54 @@ import {
   FaBuilding,
   FaMoneyBillWave,
   FaChartLine,
+  FaUser,
 } from "react-icons/fa";
 import { MdCalendarMonth } from "react-icons/md";
 
-function MovieMoreInfo({
+function RoleIcon({ role }) {
+  switch (role) {
+    case "director":
+      return <FaUserTie className="text-2xl" />;
+    case "producer":
+      return <FaUserTie className="text-2xl" />;
+    case "music":
+      return <FaMusic className="text-2xl" />;
+    case "company":
+      return <FaBuilding className="text-2xl" />;
+    default:
+      return <FaUser className="text-2xl" />;
+  }
+}
+
+function PersonAvatar({ person, role = "person", sizeClass = "w-16 h-16" }) {
+  if (person?.profile_path) {
+    return (
+      <img
+        src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
+        alt={person?.name || "Person"}
+        loading="lazy"
+        className={`${sizeClass} object-cover rounded-full mb-2 border border-gray-700`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClass} flex items-center justify-center rounded-full border border-gray-700 bg-gray-700 text-gray-100 mb-2`}
+      title={person?.name || ""}
+    >
+      <RoleIcon role={role} />
+    </div>
+  );
+}
+
+export default function MovieMoreInfo({
   movie,
   director,
-  producers,
+  producers = [],
   musicDirector,
   productionCompanies,
 }) {
-  // ✅ Map TMDB country codes to currency codes
   const currencyMap = {
     US: "USD",
     IN: "INR",
@@ -28,7 +65,6 @@ function MovieMoreInfo({
     AU: "AUD",
   };
 
-  // ✅ Format currency according to region
   const formatCurrency = (amount, countryCode) => {
     if (!amount || amount <= 0) return "Unknown";
     const currency = currencyMap[countryCode] || "USD";
@@ -39,9 +75,15 @@ function MovieMoreInfo({
     }).format(amount);
   };
 
-  // ✅ Detect movie country
   const countryCode = movie.production_countries?.[0]?.iso_3166_1 || "US";
   const countryName = movie.production_countries?.[0]?.name || "Unknown";
+
+  const labelClass = "text-gray-400 text-xs uppercase tracking-wide";
+  const valueClass = "font-semibold text-white text-sm mt-1";
+
+  const productionCompaniesDisplay = Array.isArray(productionCompanies)
+    ? productionCompanies.map((c) => (typeof c === "string" ? c : c.name)).join(", ")
+    : productionCompanies;
 
   return (
     <div className="bg-[#121212]/90 border border-gray-800 p-6 rounded-xl shadow-md mt-6">
@@ -49,116 +91,86 @@ function MovieMoreInfo({
         Movie Information
       </h3>
 
+      {/* IMPORTANT: removed justify-items-center to allow full width boxes */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 text-gray-300">
-        {/* Release Date */}
-        <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
+
+        {/* FULL WIDTH RELEASE DATE */}
+        <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
           <MdCalendarMonth className="text-blue-400 text-3xl mb-2" />
-          <span className="text-gray-400 text-xs uppercase tracking-wide">
-            Release Date
-          </span>
-          <span className="font-semibold text-white text-sm mt-1">
-            {movie.release_date || "Unknown"}
-          </span>
+          <span className={labelClass}>Release Date</span>
+          <span className={valueClass}>{movie.release_date || "Unknown"}</span>
         </div>
 
-        {/* Director */}
+        {/* FULL WIDTH DIRECTOR */}
         {director && (
-          <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
-            <img
-              src={
-                director.profile_path
-                  ? `https://image.tmdb.org/t/p/w200${director.profile_path}`
-                  : "https://via.placeholder.com/80x80?text=No+Image"
-              }
-              alt={director.name}
-              className="w-16 h-16 object-cover rounded-full mb-2 border border-gray-700"
-            />
-            <span className="text-gray-400 text-xs uppercase tracking-wide">
-              Director
-            </span>
-            <span className="font-semibold text-white text-sm mt-1">
-              {director.name}
-            </span>
+          <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
+            <PersonAvatar person={director} role="director" />
+            <span className={labelClass}>Director</span>
+            <span className={valueClass}>{director.name}</span>
           </div>
         )}
 
-        {/* Producers */}
+        {/* FULL WIDTH PRODUCERS */}
         {producers.length > 0 && (
-          <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
-            <FaUserTie className="text-green-400 text-3xl mb-2" />
-            <span className="text-gray-400 text-xs uppercase tracking-wide">
-              Producers
-            </span>
-            <span className="font-semibold text-white text-center text-sm mt-1">
-              {producers.map((p) => p.name).join(", ")}
-            </span>
+          <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
+            <PersonAvatar person={producers[0]} role="producer" />
+            <span className={labelClass}>Producer</span>
+            <span className={valueClass}>{producers[0].name}</span>
+
+            {producers.length > 1 && (
+              <div className="mt-3 text-center">
+                <span className="text-gray-400 text-xs uppercase">Other Producers:</span>
+                <p className="text-sm text-gray-300 mt-1">
+                  {producers.slice(1).map((p) => p.name).join(", ")}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Music Director */}
+        {/* FULL WIDTH MUSIC DIRECTOR */}
         {musicDirector && (
-          <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
-            <FaMusic className="text-pink-400 text-3xl mb-2" />
-            <span className="text-gray-400 text-xs uppercase tracking-wide">
-              Music Director
-            </span>
-            <span className="font-semibold text-white text-sm mt-1">
-              {musicDirector.name}
-            </span>
+          <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
+            <PersonAvatar person={musicDirector} role="music" />
+            <span className={labelClass}>Music Director</span>
+            <span className={valueClass}>{musicDirector.name}</span>
           </div>
         )}
 
-        {/* Production Companies */}
-        {productionCompanies && (
-          <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
-            <FaBuilding className="text-purple-400 text-3xl mb-2" />
-            <span className="text-gray-400 text-xs uppercase tracking-wide">
-              Production
-            </span>
-            <span className="font-semibold text-white text-center text-sm mt-1">
-              {productionCompanies}
-            </span>
+        {/* FULL WIDTH PRODUCTION */}
+        {productionCompaniesDisplay && (
+          <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
+            <PersonAvatar person={{ name: productionCompaniesDisplay }} role="company" />
+            <span className={labelClass}>Production</span>
+            <span className={valueClass}>{productionCompaniesDisplay}</span>
           </div>
         )}
 
-        {/* Country */}
-        <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
-          <span className="text-gray-400 text-xs uppercase tracking-wide">
-            Country
-          </span>
-          <span className="font-semibold text-white text-sm mt-1">
-            {countryName}
-          </span>
+        {/* FULL WIDTH COUNTRY */}
+        <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
+          <span className={labelClass}>Country</span>
+          <span className={valueClass}>{countryName}</span>
         </div>
 
-        {/* Budget */}
+        {/* FULL WIDTH BUDGET */}
         {movie.budget > 0 && (
-          <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
+          <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
             <FaMoneyBillWave className="text-yellow-400 text-3xl mb-2" />
-            <span className="text-gray-400 text-xs uppercase tracking-wide">
-              Aprox Budget
-            </span>
-            <span className="font-semibold text-white text-sm mt-1">
-              {formatCurrency(movie.budget, countryCode)}
-            </span>
+            <span className={labelClass}>Approx Budget</span>
+            <span className={valueClass}>{formatCurrency(movie.budget, countryCode)}</span>
           </div>
         )}
 
-        {/* Revenue */}
+        {/* FULL WIDTH REVENUE */}
         {movie.revenue > 0 && (
-          <div className="flex flex-col items-center bg-[#1e1e1e]/80 p-3 rounded-lg hover:bg-[#2a2a2a] transition">
+          <div className="w-full flex flex-col items-center justify-center bg-[#1e1e1e]/80 p-4 rounded-lg min-h-[150px] text-center">
             <FaChartLine className="text-green-400 text-3xl mb-2" />
-            <span className="text-gray-400 text-xs uppercase tracking-wide">
-              Aprox Revenue
-            </span>
-            <span className="font-semibold text-white text-sm mt-1">
-              {formatCurrency(movie.revenue, countryCode)}
-            </span>
+            <span className={labelClass}>Approx Revenue</span>
+            <span className={valueClass}>{formatCurrency(movie.revenue, countryCode)}</span>
           </div>
         )}
+
       </div>
     </div>
   );
 }
-
-export default MovieMoreInfo;

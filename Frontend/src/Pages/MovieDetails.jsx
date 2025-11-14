@@ -20,6 +20,7 @@ import MovieMoreInfo from "../Components/MovieMoreInfo";
 import MovieCast from "../Components/MovieCast";
 import MovieOTTs from "../Components/MovieOTTs";
 import Wiki from "../Components/Wiki";
+import { toast } from "react-toastify";
 
 export default function MovieDetails() {
   const { id } = useParams();
@@ -50,10 +51,14 @@ export default function MovieDetails() {
 
   const isInWatchlist = watchlist.some((m) => m.id === Number(id));
   const isInFavourites = favourites.some((m) => m.id === Number(id));
+  const checkUser = localStorage.getItem("userIn");
 
   // 🔹 Handle Watchlist (Add / Remove)
-  // 🔹 Handle Watchlist (Add / Remove)
   const handleWatchlist = async () => {
+    if (!checkUser) {
+      toast.error("Please login to add to watchlist");
+      return;
+    }
     try {
       setIsProcessingWatchlist(true);
       setActionWatchlist(isInWatchlist ? "removing" : "adding");
@@ -76,6 +81,10 @@ export default function MovieDetails() {
 
   // 🔹 Handle Favourites (Add / Remove)
   const handleFavourites = async () => {
+    if (!checkUser) {
+      toast.error("Please login to add to favourites");
+      return;
+    }
     try {
       setIsProcessingFavourite(true);
       setActionFavourite(isInFavourites ? "removing" : "adding");
@@ -167,6 +176,21 @@ export default function MovieDetails() {
     ?.map((c) => c.name)
     .join(", ");
 
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : null;
+
+  const backdropUrl = movie.backdrop_path
+    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+    : null;
+
+  // Determine whether the info-area buttons should be hidden on md+.
+  // If there's a backdrop, we'll show the overlay buttons on md+ and hide the info buttons on md+.
+  // If there's no backdrop, keep the info buttons visible on all sizes.
+  const infoButtonsClass = backdropUrl
+    ? "flex flex-wrap items-center gap-4 mt-6 md:hidden"
+    : "flex flex-wrap items-center gap-4 mt-6";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -174,19 +198,24 @@ export default function MovieDetails() {
       transition={{ duration: 0.6 }}
       className="relative min-h-screen bg-[#0a0a0a] text-white overflow-hidden"
     >
-      {/* Background */}
+      {/* Subtle blurred page background (keeps original look) */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-25 blur-lg"
         style={{
-          backgroundImage: `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`,
+          backgroundImage: backdropUrl
+            ? `url(${backdropUrl})`
+            : posterUrl
+            ? `url(${posterUrl})`
+            : undefined,
         }}
+        aria-hidden="true"
       ></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/90 to-black/95"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/80 to-black/80"></div>
 
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
-        className="fixed top-20 lg:left-5 right-5 lg:right-auto z-20 bg-gray-800/70 hover:bg-gray-700 text-white p-3 rounded-full transition cursor-pointer"
+        className="fixed top-20  left-5 z-20 bg-gray-800/70 hover:bg-gray-700 text-white p-3 rounded-full transition cursor-pointer"
       >
         <FaArrowLeft className="sm:text-lg text-sm" />
       </button>
@@ -197,15 +226,26 @@ export default function MovieDetails() {
           {/* Poster */}
           <div className="flex justify-center md:justify-start w-full sm:w-4/5 md:w-2/5 lg:w-1/3 px-4">
             <div className="w-[70%] sm:w-[60%] md:w-full max-w-[350px] aspect-[2/3]">
-              <img
-                src={
-                  movie.poster_path
-                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                    : "https://via.placeholder.com/500x750?text=No+Image"
-                }
-                alt={movie.title}
-                className="w-full h-full rounded-2xl shadow-2xl border border-gray-800 object-cover"
-              />
+              {posterUrl ? (
+                <img
+                  src={posterUrl}
+                  alt={movie.title}
+                  className="w-full h-full rounded-2xl shadow-2xl border border-gray-800 object-cover"
+                />
+              ) : (
+                <div className="w-full h-full rounded-2xl shadow-2xl border border-gray-800 bg-black flex items-center justify-center p-6">
+                  <div>
+                    <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight">
+                      {movie.title}
+                    </h2>
+                    {movie.release_date && (
+                      <p className="text-center text-sm text-gray-400 mt-2">
+                        {movie.release_date.slice(0, 4)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -247,8 +287,8 @@ export default function MovieDetails() {
 
             {wiki && <Wiki wiki={wiki} />}
 
-            {/* Buttons */}
-            <div className="flex flex-wrap items-center gap-4 mt-6">
+            {/* Buttons in Info area (visible on small screens, or always if no backdrop) */}
+            <div className={infoButtonsClass}>
               {/* Trailer */}
               <button
                 onClick={() => window.open(trailer, "_blank")}
@@ -320,10 +360,117 @@ export default function MovieDetails() {
                 )}
               </button>
             </div>
-
-            <MovieOTTs providers={providers} movie={movie} />
           </div>
         </div>
+        
+        {/* --- Backdrop Showcase (NEW) --- */}
+        {backdropUrl && (
+          <section
+            aria-label="Backdrop showcase"
+            className="mx-2 md:mx-0 relative"
+          >
+            <h3 className="text-2xl font-semibold mb-3 text-red-400">
+              Banner 
+            </h3>
+            <div
+              className="relative rounded-2xl overflow-hidden border border-gray-800 shadow-lg"
+              style={{ minHeight: 160 }}
+            >
+              {/* Backdrop image */}
+              <img
+                src={backdropUrl}
+                alt={`${movie.title} backdrop`}
+                className="w-full h-40 sm:h-56 md:h-96 object-cover"
+                loading="lazy"
+              />
+
+              {/* Overlay gradient that blends into theme */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent"></div>
+
+              {/* Card content on top of backdrop */}
+              <div className="absolute bottom-4 left-4 right-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="max-w-xl">
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white drop-shadow-md">
+                    {movie.title}
+                  </h3>
+                  {movie.tagline && (
+                    <p className="text-sm text-gray-300 mt-1 line-clamp-2">
+                      {movie.tagline}
+                    </p>
+                  )}
+                </div>
+
+                {/* Buttons over backdrop — show only on md+ */}
+                <div className="hidden md:flex absolute bottom -5 right-5 items-center gap-3 z-10">
+                  {/* Trailer */}
+                  <button
+                    onClick={() => window.open(trailer, "_blank")}
+                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-red-600 to-red-500 text-white font-medium shadow-md hover:scale-105 transition"
+                  >
+                    <FaPlayCircle className="text-base" />
+                    <span className="text-xs md:text-sm">Trailer</span>
+                  </button>
+
+                  {/* Watchlist */}
+                  <button
+                    onClick={handleWatchlist}
+                    disabled={isProcessingWatchlist}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md font-medium transition cursor-pointer ${
+                      isInWatchlist
+                        ? "bg-gradient-to-r from-blue-700/60 to-blue-500 text-white"
+                        : "bg-[#1b1b1b] text-blue-400 border border-blue-700/40 hover:bg-blue-900/20"
+                    } ${
+                      isProcessingWatchlist
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
+                    }`}
+                    title={
+                      isInWatchlist
+                        ? "Remove from Watchlist"
+                        : "Add to Watchlist"
+                    }
+                  >
+                    {isProcessingWatchlist ? (
+                      <span className="text-xs">...</span>
+                    ) : isInWatchlist ? (
+                      <BsBookmarkFill className="text-base" />
+                    ) : (
+                      <BsBookmarkPlus className="text-base" />
+                    )}
+                  </button>
+
+                  {/* Favourite */}
+                  <button
+                    onClick={handleFavourites}
+                    disabled={isProcessingFavourite}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md font-medium transition cursor-pointer ${
+                      isInFavourites
+                        ? "bg-gradient-to-r from-pink-700/60 to-red-600 text-white"
+                        : "bg-[#1b1b1b] text-red-400 border border-red-700/40 hover:bg-red-900/20"
+                    } ${
+                      isProcessingFavourite
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
+                    }`}
+                    title={
+                      isInFavourites
+                        ? "Remove from Favourites"
+                        : "Add to Favourites"
+                    }
+                  >
+                    {isProcessingFavourite ? (
+                      <span className="text-xs">...</span>
+                    ) : isInFavourites ? (
+                      <FaHeart className="text-base" />
+                    ) : (
+                      <FaRegHeart className="text-base" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <MovieCast cast={cast} />
 

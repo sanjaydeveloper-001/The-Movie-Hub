@@ -13,7 +13,6 @@ export default function Intro({ onFinish, setQuery }) {
 
   useEffect(() => {
     const savedLang = localStorage.getItem("localUserLanguage");
-
     const timer = setTimeout(() => {
       setShowLogo(false);
       if (savedLang) {
@@ -48,7 +47,6 @@ export default function Intro({ onFinish, setQuery }) {
   // ✅ Finish function
   const finishIntro = () => {
     sessionStorage.setItem("introShown", "true");
-    localStorage.setItem('localUserLanguage', selectedLang);
     onFinish();
   };
 
