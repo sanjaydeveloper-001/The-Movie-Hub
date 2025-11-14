@@ -9,7 +9,9 @@ export const MovieProvider = ({ children }) => {
   const [watchlist, setWatchlist] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [actionLoading, setActionLoading] = useState({ type: null, id: null });
-  const [lang, setLang] = useState(()=> localStorage.getItem("localUserLanguage") || "en");
+  const [lang, setLang] = useState(
+    () => localStorage.getItem("localUserLanguage") || "en"
+  );
 
   const token =
     localStorage.getItem("movieHub_token") ||
@@ -19,26 +21,31 @@ export const MovieProvider = ({ children }) => {
     return axios.create({
       baseURL: import.meta.env.VITE_BACKEND_LINK,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-    }); 
+    });
   }, [token]);
 
   useEffect(() => {
     const fetchUserLists = async () => {
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       try {
         const { data } = await api.get("/api/users/profile");
         setUser(data);
-        setLang(data.language || localStorage.getItem("localUserLanguage") || "ta");
+        if(data.language){
+          setLang(data.language);
+          localStorage.setItem("localUserLanguage", data.language);
+        }
+        else{
+          setLang( localStorage.getItem("localUserLanguage") || "en");
+        }
         setWatchlist(data.watchlist || []);
         setFavourites(data.favourites || []);
       } catch (err) {
         console.error("Error fetching user:", err);
         setUser(null);
       }
-    };
 
+      console.log(user);
+    };
     fetchUserLists();
   }, [token, api]);
 
@@ -62,7 +69,10 @@ export const MovieProvider = ({ children }) => {
     setActionLoading({ type, id: movie.id });
 
     try {
-      const { data } = await api.post("/api/users/update-list", { type, movie });
+      const { data } = await api.post("/api/users/update-list", {
+        type,
+        movie,
+      });
       setWatchlist(data.watchlist || []);
       setFavourites(data.favourites || []);
     } catch (err) {

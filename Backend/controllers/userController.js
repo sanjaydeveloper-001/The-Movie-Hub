@@ -1,3 +1,4 @@
+// controllers/userController.js
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -57,9 +58,10 @@ export const googleLogin = async (req, res) => {
 };
 
 // ---------------- MULTER SETUP ----------------
+// store files into ./uploads/profilePhotos using path.join for cross-platform
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = "uploads/profilePhotos";
+    const uploadPath = path.join(process.cwd(), "uploads", "profilePhotos");
     if (!fs.existsSync(uploadPath))
       fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
@@ -113,37 +115,15 @@ const sendWelcomeEmail = async (email, username, isGoogleUser = false) => {
       ? `
 Hello ${username},
 
-We're thrilled to have you onboard! You've successfully joined *MovieHub* using your Google account.  
-Start exploring your favorite movies, track watchlists, and add notes about what you love!
-
-✨ Features you can enjoy:
-- Save your favorites & watchlist
-- Write notes for each movie
-- View the latest movie details
-
-Thank you for joining our cinematic journey!  
-Keep watching, keep exploring 🍿
-
-Warm regards,  
-🎥 The MovieHub Team  
+We're thrilled to have you onboard! You've successfully joined MovieHub using your Google account.
+...
 help: ${process.env.EMAIL_USER}
       `
       : `
 Hello ${username},
 
-Your account has been successfully created on *MovieHub*!  
-You can now log in and start saving your favorite movies and watchlists.
-
-✨ Here's what you can do:
-- Add your favorites & notes
-- Discover trending movies
-- Create personalized collections
-
-Welcome aboard, movie lover! 🎬  
-Thank you for being part of our community.  
-
-Warm regards,  
-🎥 The MovieHub Team  
+Your account has been successfully created on MovieHub!
+...
 help: ${process.env.EMAIL_USER}
       `;
 
@@ -215,18 +195,27 @@ export const changePhoto = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (!req.file)
-      return res.status(400).json({ message: "No photo uploaded" });
+    if (!req.file) return res.status(400).json({ message: "No photo uploaded" });
 
-    // Delete old photo if exists
-    if (user.photo && user.photo.startsWith(`${req.protocol}`)) {
-      const oldPath = user.photo.split(`${req.get("host")}/`)[1];
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    const hostUrl = `${req.protocol}://${req.get("host")}`;
+
+    if (user.photo && user.photo.startsWith(hostUrl)) {
+      const segments = user.photo.split(`${req.get("host")}/`);
+      const oldRelative = segments[1] || "";
+      const oldPath = path.join(process.cwd(), oldRelative);
+      if (oldPath && fs.existsSync(oldPath)) {
+        try { fs.unlinkSync(oldPath); } catch (e) { console.warn("Unable to delete old photo:", e); }
+      }
+    }
+    let relativeFilePath = path.relative(process.cwd(), req.file.path);
+    relativeFilePath = relativeFilePath.replace(/\\/g, "/");
+    if (!relativeFilePath.startsWith("uploads/")) {
+      const idx = relativeFilePath.indexOf("uploads/");
+      if (idx !== -1) relativeFilePath = relativeFilePath.slice(idx);
+      else relativeFilePath = `uploads/${relativeFilePath}`;
     }
 
-    user.photo = `${req.protocol}://${req.get("host")}/${
-      req.file.path
-    }`.replace(/\\/g, "/");
+    user.photo = `${hostUrl}/${relativeFilePath}`;
     await user.save();
 
     res.json({
@@ -245,9 +234,15 @@ export const deletePhoto = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (user.photo && user.photo.startsWith(`${req.protocol}`)) {
-      const oldPath = user.photo.split(`${req.get("host")}/`)[1];
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    const hostUrl = `${req.protocol}://${req.get("host")}`;
+
+    if (user.photo && user.photo.startsWith(hostUrl)) {
+      const segments = user.photo.split(`${req.get("host")}/`);
+      const oldRelative = segments[1] || "";
+      const oldPath = path.join(process.cwd(), oldRelative);
+      if (oldPath && fs.existsSync(oldPath)) {
+        try { fs.unlinkSync(oldPath); } catch (e) { console.warn("Unable to delete photo:", e); }
+      }
     }
 
     user.photo = "";
@@ -259,6 +254,7 @@ export const deletePhoto = async (req, res) => {
     res.status(500).json({ message: "Failed to delete photo" });
   }
 };
+
 
 // ---------------- CHANGE PASSWORD ----------------
 export const changePassword = async (req, res) => {
@@ -329,7 +325,6 @@ export const updateUserLists = async (req, res) => {
 };
 
 // ---------------- SEND RESET CODE ----------------
-// ---------------- SEND CODE FOR PASSWORD CHANGE ----------------
 export const sendCode = async (req, res) => {
   try {
     const { email } = req.body;
@@ -363,8 +358,8 @@ Your verification code is: ${changeCode}
 
 ⚠️ This code will expire in 10 minutes. If you didn’t request a password change, please ignore this message — your account is still secure.
 
-Best regards,  
-The MovieHub Security Team  
+Best regards,
+The MovieHub Security Team
 Email Support: ${process.env.EMAIL_USER}
       `,
     });
@@ -376,7 +371,6 @@ Email Support: ${process.env.EMAIL_USER}
   }
 };
 
-
 // ---------------- RESET PASSWORD ----------------
 export const resetPassword = async (req, res) => {
   try {
@@ -384,7 +378,7 @@ export const resetPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.resetCode !== code )
+    if (user.resetCode !== code)
       return res.status(400).json({ message: "Invalid or expired code" });
 
     const isSamePassword = await bcrypt.compare(newPassword, user.password);

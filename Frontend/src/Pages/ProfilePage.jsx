@@ -63,9 +63,8 @@ export default function ProfilePage() {
       setSelectedLanguage(
         user.language || localStorage.getItem("localUserLanguage") || "en"
       );
-    }
-    else{
-      navigate(-1);
+    } else {
+      navigate("/");
     }
   }, [user, token, navigate]);
 
@@ -99,9 +98,17 @@ export default function ProfilePage() {
       const { data } = await api.put("/api/users/change-photo", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setUser((prev) => ({ ...prev, photo: data.photo }));
+
+      if (data && data.photo) {
+        setUser((prev) => ({ ...prev, photo: data.photo }));
+        setPhotoPreview(data.photo);
+      } else {
+        toast.info("Uploaded but server didn't return photo URL.");
+      }
+
       toast.success("Photo updated!");
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to update photo");
     } finally {
       setLoading("");
@@ -156,8 +163,8 @@ export default function ProfilePage() {
       localStorage.setItem("localUserLanguage", data.language);
 
       const langName =
-      languages.find((lang) => lang.code === selectedLanguage)?.name ||
-      selectedLanguage.toUpperCase();
+        languages.find((lang) => lang.code === selectedLanguage)?.name ||
+        selectedLanguage.toUpperCase();
 
       toast.success(`Language set to ${langName}`);
       setEditingLang(false);
@@ -175,7 +182,7 @@ export default function ProfilePage() {
     localStorage.removeItem("userIn");
     setUser(null);
     toast.success("Logged out successfully");
-    navigate(-1);
+    navigate("/");
     window.location.reload();
   };
 
@@ -306,11 +313,14 @@ export default function ProfilePage() {
           <div className="text-center mb-6 items-center justify-center gap-5">
             <div className="text-center md:flex items-center justify-center gap-5">
               <h3 className="text-lg font-semibold mb-2">🌐 Language :</h3>
-              <div className="md:w-[220px]">{<LanguageSelector
-                selectedLanguage={selectedLanguage}
-                setSelectedLanguage={setSelectedLanguage}
-                setEditingLang={setEditingLang}
-              />}
+              <div className="md:w-[220px]">
+                {
+                  <LanguageSelector
+                    selectedLanguage={selectedLanguage}
+                    setSelectedLanguage={setSelectedLanguage}
+                    setEditingLang={setEditingLang}
+                  />
+                }
               </div>
             </div>
             {editingLang && (
