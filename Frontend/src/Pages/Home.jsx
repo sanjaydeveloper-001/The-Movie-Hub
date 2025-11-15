@@ -22,7 +22,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [intro, setIntro] = useState(() => !sessionStorage.getItem("introShown"));
-  const [query, setQuery] = useState("");
   const { lang } = useContext(MovieContext);
 
   const navigate = useNavigate();
@@ -41,10 +40,6 @@ export default function Home() {
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  useEffect(() => {
-    if (query) navigate(`/${query}`);
-  }, [query, navigate]);
 
   const isCancelError = (err) =>
     err?.name === "CanceledError" || axios.isCancel?.(err);
@@ -205,7 +200,7 @@ export default function Home() {
   return (
     <>
       {intro ? (
-        <Intro onFinish={() => setIntro(false)} setQuery={setQuery} />
+        <Intro onFinish={() => setIntro(false)} />
       ) : (
         <div className="bg-[#0f0f0f] min-h-screen text-white">
           <Banner lang={lang} />

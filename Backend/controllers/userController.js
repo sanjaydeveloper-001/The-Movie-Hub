@@ -87,13 +87,13 @@ export const registerUser = async (req, res) => {
 
     const user = await User.create({ username, email, password });
 
-    await sendWelcomeEmail(email, username, false);
     res.status(201).json({
       _id: user._id,
       username: user.username,
       email: user.email,
       token: generateToken(user._id),
     });
+    await sendWelcomeEmail(email, username, false);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

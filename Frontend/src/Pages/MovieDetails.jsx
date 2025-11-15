@@ -360,6 +360,9 @@ export default function MovieDetails() {
                 )}
               </button>
             </div>
+
+            {/* Otts */}
+            <MovieOTTs providers={providers} movie={movie} />
           </div>
         </div>
         

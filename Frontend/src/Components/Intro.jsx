@@ -3,16 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import logo from "../assets/Logo.png";
 import { FaArrowRight, FaLanguage, FaUserLock, FaFilm } from "react-icons/fa";
 import { MovieContext } from "../context/MovieContext";
+import { useNavigate } from "react-router-dom";
 
-export default function Intro({ onFinish, setQuery }) {
+export default function Intro({ onFinish }) {
   const [showLogo, setShowLogo] = useState(true);
   const [step, setStep] = useState(1);
   const [selectedLang, setSelectedLang] = useState("en");
   const [showSteps, setShowSteps] = useState(false);
   const {lang, setLang} = useContext(MovieContext);
+  const savedLang = localStorage.getItem("localUserLanguage");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const savedLang = localStorage.getItem("localUserLanguage");
     const timer = setTimeout(() => {
       setShowLogo(false);
       if (savedLang) {
@@ -47,6 +49,7 @@ export default function Intro({ onFinish, setQuery }) {
   // ✅ Finish function
   const finishIntro = () => {
     sessionStorage.setItem("introShown", "true");
+    if(!savedLang) localStorage.setItem("localUserLanguage", selectedLang);
     onFinish();
   };
 
@@ -148,7 +151,6 @@ export default function Intro({ onFinish, setQuery }) {
                         onClick={() => {
                           setSelectedLang(lang.code);
                           setLang(lang.code);
-                          localStorage.setItem("localUserLanguage", lang.code);
                         }}
                         className={`py-2 rounded-lg font-medium transition
                           ${
@@ -202,8 +204,8 @@ export default function Intro({ onFinish, setQuery }) {
                   <div className="flex flex-col gap-3 mt-5">
                     <button
                       onClick={() => {
-                        setQuery("login");
                         finishIntro();
+                        navigate("/login");
                       }}
                       className="py-3 rounded-lg bg-gradient-to-r from-[#7A0000] to-[#A00000] hover:from-[#A00000] hover:to-[#C00000] text-white font-semibold shadow-[0_0_10px_#FF0000] transition"
                     >
@@ -211,8 +213,8 @@ export default function Intro({ onFinish, setQuery }) {
                     </button>
                     <button
                       onClick={() => {
-                        setQuery("signup");
                         finishIntro();
+                        navigate("/signup")
                       }}
                       className="py-3 rounded-lg bg-[#1b1b1b] text-gray-300 hover:bg-[#2b2b2b] transition"
                     >
