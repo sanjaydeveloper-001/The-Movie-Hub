@@ -125,7 +125,7 @@ movie-hub-v2/
 
 ## 🌐 Live Demo
 
-🔗 **Live Link:** [Add your deployed site link here]  
+ 
 💻 **GitHub Repository:** [https://github.com/sanjaydeveloper-001/The-Movie-Hub/](https://github.com/sanjaydeveloper-001/The-Movie-Hub/)
 
 ---
